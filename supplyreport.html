@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Report</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 80px;
+            background-color: #d3d3d3;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: width 0.3s ease-in-out;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar.expanded {
+            width: 250px;
+            align-items: flex-start;
+            padding-left: 20px;
+        }
+        .sidebar div {
+            width: 50px;
+            height: 50px;
+            background: white;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .sidebar.expanded div {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 15px;
+        }
+        .sidebar div span {
+            display: none;
+            margin-left: 15px;
+            font-weight: 600;
+        }
+        .sidebar.expanded div span {
+            display: inline;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #d3d3d3;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        .nav a, .nav button {
+            text-decoration: none;
+            color: black;
+            font-weight: 600;
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s ease; /* Smooth color transition */
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: #00c853; /* Underline color (Green) */
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease, background-color 0.3s ease; /* Smooth color transition */
+        }
+
+        .nav a:hover {
+            color: #00c853; /* Hover color (Green) */
+        }
+
+        .nav a:hover::after {
+            width: 100%; /* Expand underline on hover */
+            background-color: #00c853; /* Underline color on hover */
+        }
+
+        .nav a.active {
+            font-weight: 900;
+            color: #007bff; /* Active color (Blue) */
+        }
+
+        .nav a.active::after {
+            width: 100%; /* Keep underline expanded for active link */
+            background-color: #007bff; /* Keep underline blue for active link */
+        }
+        .content {
+            flex-grow: 1;
+            background: #444;
+            padding: 20px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
+            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>Inventory</h1>
+                <div class="nav">
+                    <a href="salesreport.html">Sales Report</a>
+                    <a href="inventoryreport.html">Inventory Report</a>
+                    <a href="supplyreport.html" class="active">Supply Report</a>
+                    <a href="profitandexpense.html">Profit & Expense Tracking</a>
+                </div>
+            </div>
+            <div class="content">
+                <!-- Supply Report content will be here -->
+                <p>This is the Supply Report content.</p>
+                <!-- Add your supply report table/chart here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            let sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("expanded");
+        }
+
+        function updateActiveTab() {
+            const path = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav a');
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const currentPage = path.substring(path.lastIndexOf('/') + 1);
+
+                if (href === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = updateActiveTab;
+
+    </script>
+</body>
+</html>
