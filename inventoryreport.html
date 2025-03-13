@@ -71,7 +71,7 @@
             justify-content: space-between;
         }
         .header h1 {
-            margin: 0;
+            margin:0;
             font-size: 24px;
         }
         .nav {
@@ -98,7 +98,7 @@
             background-color: #00c853; /* Underline color (Green) */
             bottom: -5px;
             left: 0;
-            transition: width 0.3s ease, background-color 0.3s ease; /* Underline animation */
+            transition: width 0.3s ease, background-color 0.3s ease; /* Smooth color transition */
         }
 
         .nav a:hover {
@@ -117,13 +117,51 @@
 
         .nav a.active::after {
             width: 100%; /* Keep underline expanded for active link */
-            background-color: #007bff; /* Keep underline blue for active link */
+            background-color: #007bff; /* Underline color on hover */
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff; /* Changed to white for table visibility */
             padding: 20px;
-            color: white;
+            color: black; /* Changed to black for table visibility */
+        }
+
+        /* Table Styles */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          color: black; /* Added for text visibility*/
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #007bff;
+          color: white;
+        }
+
+        .summary-metrics {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: black;
+        }
+
+        .summary-metrics h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .summary-metrics p {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -131,25 +169,45 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
-                <h1>Inventory</h1>
+                <h1>Inventory Report</h1>
                 <div class="nav">
                     <a href="salesreport.html">Sales Report</a>
-                    <a href="inventoryreport.html" class="active">Inventory Report</a>
+                    <a href="inventoryreport.html"  class="active">Inventory Report</a>
                     <a href="supplyreport.html">Supply Report</a>
                     <a href="profitandexpense.html">Profit & Expense Tracking</a>
                 </div>
             </div>
             <div class="content">
+
+                <div class="summary-metrics">
+                    <h2>Inventory Report Summary Metrics</h2>
+                    <p>Total Items in Inventory: <span id="totalItems"></span></p>
+                    <p>Number of Unique Items: <span id="uniqueItems"></span></p>
+                    <p>Low Stock Items: <span id="lowStockItems"></span></p>
+                    <p>Out of Stock Items: <span id="outOfStockItems"></span></p>
+                    <p>Overstocked Items: <span id="overstockedItems"></span></p>
+                </div>
+
                 <!-- Inventory Report content will be here -->
-                <p>This is the Inventory Report content.</p>
-                <!-- Add your inventory report table/chart here -->
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Inventory data will be inserted here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -175,8 +233,76 @@
             });
         }
 
-        window.onload = updateActiveTab;
+        async function loadInventoryReport() {
+            const tableBody = document.getElementById("inventoryTableBody");
+            tableBody.innerHTML = ""; // Clear existing data
 
+            try {
+                const res = await fetch("http://localhost:3000/api/inventory-report");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
+
+                let totalItems = 0;
+                let uniqueItems = data.length;
+                let lowStockItems = 0;
+                let outOfStockItems = 0;
+                let overstockedItems = 0; // You need to define what "overstocked" means
+
+                data.forEach(item => {
+                    totalItems += item.quantity;
+
+                    // Define low stock threshold and how to check for overstocked
+                    const lowStockThreshold = 10; // Example threshold
+                    const optimalStockLevel = 50; // Example optimal level
+
+
+                    if (item.quantity < lowStockThreshold) {
+                        lowStockItems++;
+                    }
+
+                    if (item.quantity === 0) {
+                        outOfStockItems++;
+                    }
+
+                    if (item.quantity > optimalStockLevel) {
+                        overstockedItems++;
+                    }
+
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${item.item_id}</td>
+                        <td>${item.item_name}</td>
+                        <td>${item.quantity}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                document.getElementById("totalItems").innerText = totalItems;
+                document.getElementById("uniqueItems").innerText = uniqueItems;
+                document.getElementById("lowStockItems").innerText = lowStockItems;
+                document.getElementById("outOfStockItems").innerText = outOfStockItems;
+                document.getElementById("overstockedItems").innerText = overstockedItems;
+
+            } catch (error) {
+                console.error("Error fetching inventory report:", error);
+                tableBody.innerHTML = `<tr><td colspan="3">Error loading data.</td></tr>`;
+
+                // Set default value to "" if there is an error so the frontend doesnt break
+                document.getElementById("totalItems").innerText = "";
+                document.getElementById("uniqueItems").innerText = "";
+                document.getElementById("lowStockItems").innerText = "";
+                document.getElementById("outOfStockItems").innerText = "";
+                document.getElementById("overstockedItems").innerText = "";
+            }
+        }
+
+        window.onload = () => {
+            updateActiveTab();
+            loadInventoryReport();
+        };
     </script>
 </body>
 </html>

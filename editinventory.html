@@ -121,9 +121,49 @@
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff; /* Changed to white for better table visibility */
             padding: 20px;
+            color: black;  /* Changed to black for text visibility */
+        }
+
+        /* Table Styles (important to make them visible) */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+            background: white;
+            box-shadow: 0 0 10px #ccc;
+            color: black; /* Added this line */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #333;
             color: white;
+        }
+
+        td input {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box; /* ensures padding and border are included in the width */
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -131,10 +171,10 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
@@ -147,8 +187,50 @@
             </div>
             <div class="content">
                 <!-- Edit Inventory content will be here -->
-                <p>This is the Edit Inventory content.</p>
-                <!-- Add your form for editing inventory items here -->
+
+                <h2>Item</h2>
+                <table id="itemTable">
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <h2>Inventory Make</h2>
+                <table id="makeTable">
+                    <thead>
+                        <tr>
+                            <th>InventoryID</th>
+                            <th>Date</th>
+                            <th>ManagerID</th>
+                            <th>CookID</th>
+                            <th>Total_make</th>
+                            <th>TotalCost</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <h2>Inventory Details</h2>
+                <table id="detailsTable">
+                    <thead>
+                        <tr>
+                            <th>InventoryID</th>
+                            <th>ItemID</th>
+                            <th>Quantity</th>
+                            <th>Cost</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -175,6 +257,187 @@
         }
 
         window.onload = updateActiveTab;
+
+        // Fetch and display data
+        async function loadData() {
+            const itemRes = await fetch('http://localhost:3000/api/item');
+            const itemData = await itemRes.json();
+            const itemTable = document.querySelector('#itemTable tbody');
+            itemTable.innerHTML = '';
+
+            itemData.forEach(row => {
+                itemTable.innerHTML += `
+                <tr>
+                    <td>${row.item_id}</td>
+                    <td><input value="${row.item_name}" /></td>
+                    <td><input value="${row.quantity}" /></td>
+                    <td>
+                        <button onclick="updateItem(${row.item_id}, this)">Update</button>
+                        <button onclick="deleteItem(${row.item_id})" style="background-color:red">Delete</button>
+                    </td>
+                </tr>`;
+            });
+
+            const makeRes = await fetch('http://localhost:3000/api/inventory-make');
+            const makeData = await makeRes.json();
+            const makeTable = document.querySelector('#makeTable tbody');
+            makeTable.innerHTML = '';
+
+            makeData.forEach(row => {
+                makeTable.innerHTML += `
+                <tr>
+                    <td>${row.InventoryID}</td>
+                    <td><input value="${row.date}" /></td>
+                    <td><input value="${row.ManagerID}" /></td>
+                    <td><input value="${row.CookID}" /></td>
+                    <td><input value="${row.Total_make}" /></td>
+                    <td><input value="${row.TotalCost}" /></td>
+                    <td>
+                        <button onclick="updateMake(${row.InventoryID}, this)">Update</button>
+                        <button onclick="deleteMake(${row.InventoryID})" style="background-color:red">Delete</button>
+                    </td>
+                </tr>`;
+            });
+
+            const detailsRes = await fetch('http://localhost:3000/api/inventory-details');
+            const detailsData = await detailsRes.json();
+            const detailsTable = document.querySelector('#detailsTable tbody');
+            detailsTable.innerHTML = '';
+
+            detailsData.forEach(row => {
+                detailsTable.innerHTML += `
+                    <tr>
+                        <td>${row.inventory_id}</td>
+                        <td>${row.item_id}</td>
+                        <td><input value="${row.quantity}" /></td>
+                        <td><input value="${row.cost}" /></td>
+                        <td><input value="${row.subtotal}" /></td>
+                        <td>
+                            <button onclick="updateDetails(${row.inventory_id}, ${row.item_id}, this)">Update</button>
+                            <button onclick="deleteDetails(${row.inventory_id}, ${row.item_id})" style="background-color:red">Delete</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+         // Update Item
+         async function updateItem(id, btn) {
+            const row = btn.closest("tr");
+            const inputs = row.querySelectorAll("input");
+            const data = {
+                item_name: inputs[0].value,
+                quantity: inputs[1].value,
+            };
+
+            const res = await fetch(`http://localhost:3000/api/item/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                alert('Item updated!');
+                loadData();
+            } else {
+                alert('Update failed');
+            }
+        }
+
+        // Update Inventory Make
+        async function updateMake(id, btn) {
+            const row = btn.closest("tr");
+            const inputs = row.querySelectorAll("input");
+            const data = {
+                date: inputs[0].value,
+                managerID: inputs[1].value,
+                cookID: inputs[2].value,
+                totalMake: inputs[3].value,
+                totalCost: inputs[4].value,
+            };
+
+            const res = await fetch(`http://localhost:3000/api/inventory-make/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                alert('Inventory Make updated!');
+                loadData();
+            } else {
+                alert('Update failed');
+            }
+        }
+
+        // Update Inventory Details
+        async function updateDetails(inventory_id, item_id, btn) {
+            const row = btn.closest("tr");
+            const inputs = row.querySelectorAll("input");
+            const data = {
+                quantity: inputs[0].value,
+                cost: inputs[1].value,
+                subtotal: inputs[2].value,
+            };
+
+            const res = await fetch(`http://localhost:3000/api/inventory-details/${inventory_id}/${item_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                alert('Inventory Details updated!');
+                loadData();
+            } else {
+                alert('Update failed');
+            }
+        }
+
+         // Add deleteItem
+         async function deleteItem(id) {
+            if (confirm("Are you sure you want to delete this Item record?")) {
+                const res = await fetch(`http://localhost:3000/api/item/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    alert('Item deleted!');
+                    loadData();
+                } else {
+                    alert('Delete failed');
+                }
+            }
+        }
+        // Add deleteMake
+        async function deleteMake(id) {
+            if (confirm("Are you sure you want to delete this Inventory Make record?")) {
+                const res = await fetch(`http://localhost:3000/api/inventory-make/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    alert('Inventory Make deleted!');
+                    loadData();
+                } else {
+                    alert('Delete failed');
+                }
+            }
+        }
+
+        // Add deleteDetails
+        async function deleteDetails(inventory_id, item_id) {
+            if (confirm("Are you sure you want to delete this Inventory Details record?")) {
+                const res = await fetch(`http://localhost:3000/api/inventory-details/${inventory_id}/${item_id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    alert('Inventory Details deleted!');
+                    loadData();
+                } else {
+                    alert('Delete failed');
+                }
+            }
+        }
+
+        loadData();  // IMPORTANT:  Call loadData() after the function definitions.
 
     </script>
 </body>

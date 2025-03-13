@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Lists</title>
+    <title>View Staff List</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
@@ -121,9 +121,29 @@
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff; /*  Changed to white for better table visibility */
             padding: 20px;
-            color: white;
+            color: black; /* Changed to black for better table visibility */
+        }
+
+         /* Table Styles */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          color: black; /* Added for text visibility*/
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #007bff;
+          color: white;
         }
     </style>
 </head>
@@ -131,14 +151,14 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
-                <h1>Inventory</h1>
+                <h1>Staff List</h1>
                 <div class="nav">
                     <a href="stafflists.html" class="active">Staff Lists</a>
                     <a href="rolesandpermission.html">Roles and Permissions</a>
@@ -146,12 +166,25 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Staff Lists content will be here -->
-                <p>This is the Staff Lists content.</p>
-                <!-- Add your staff list table/display here -->
+                <table id="staffTable">
+                    <thead>
+                        <tr>
+                            <th>Staff ID</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Hire Date</th>
+                            <th>Salary</th>
+                            <th>Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody">
+                        <!-- Staff data will be dynamically inserted here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
     <script>
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
@@ -174,8 +207,40 @@
             });
         }
 
-        window.onload = updateActiveTab;
+        async function loadStaffList() {
+            const tableBody = document.getElementById("staffTableBody");
+            tableBody.innerHTML = ""; // Clear existing data
 
+            try {
+                const res = await fetch("http://localhost:3000/api/staff");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
+
+                data.forEach(staff => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${staff.staff_id}</td>
+                        <td>${staff.name}</td>
+                        <td>${staff.role}</td>
+                        <td>${staff.hire_date}</td>
+                        <td>${staff.salary}</td>
+                        <td>${staff.shift}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Error fetching staff list:", error);
+                tableBody.innerHTML = `<tr><td colspan="6">Error loading data. Please check the console.</td></tr>`;
+            }
+        }
+
+        window.onload = () => {
+            updateActiveTab();
+            loadStaffList();
+        };
     </script>
 </body>
 </html>

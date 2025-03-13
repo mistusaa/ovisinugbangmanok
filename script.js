@@ -22,3 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => console.error('Error loading inventory:', err));
 });
+
+
+// Delete Inventory_Make
+async function deleteMake(id) {
+    if (confirm("Are you sure you want to delete this Inventory Make record?")) {
+      const res = await fetch(`http://localhost:3000/api/inventory-make/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        alert('Inventory Make deleted!');
+        loadData();
+      } else {
+        alert('Delete failed');
+      }
+    }
+  }
+  
+  // Delete Inventory_Details
+  async function deleteDetails(inventory_id, item_id) {
+    if (confirm("Are you sure you want to delete this Inventory Details record?")) {
+      const res = await fetch(`http://localhost:3000/api/inventory-details/${inventory_id}/${item_id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        alert('Inventory Details deleted!');
+        loadData();
+      } else {
+        alert('Delete failed');
+      }
+    }
+  }
+  

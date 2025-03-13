@@ -121,9 +121,29 @@
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff; /*  Changed to white for better table visibility */
             padding: 20px;
-            color: white;
+            color: black; /* Changed to black for better table visibility */
+        }
+
+         /* Table Styles */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          color: black; /* Added for text visibility*/
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #007bff;
+          color: white;
         }
     </style>
 </head>
@@ -131,14 +151,14 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
-                <h1>Inventory</h1>
+                <h1>Staff Schedule</h1>
                 <div class="nav">
                     <a href="stafflists.html">Staff Lists</a>
                     <a href="rolesandpermission.html">Roles and Permissions</a>
@@ -146,12 +166,23 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Staff Schedule content will be here -->
-                <p>This is the Staff Schedule content.</p>
-                <!-- Add your staff schedule table/editor here -->
+                <table id="staffScheduleTable">
+                    <thead>
+                        <tr>
+                            <th>Staff ID</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffScheduleBody">
+                        <!-- Staff schedule data will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
     <script>
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
@@ -174,8 +205,39 @@
             });
         }
 
-        window.onload = updateActiveTab;
 
+        async function loadStaffSchedule() {
+            const tableBody = document.getElementById("staffScheduleBody");
+            tableBody.innerHTML = "";
+
+            try {
+                const res = await fetch("http://localhost:3000/api/staff"); // Use the same /api/staff endpoint
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
+
+                data.forEach(staff => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${staff.staff_id}</td>
+                        <td>${staff.name}</td>
+                        <td>${staff.role}</td>
+                        <td>${staff.shift}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Error fetching staff schedule:", error);
+                tableBody.innerHTML = `<tr><td colspan="4">Error loading data. Please check the console.</td></tr>`;
+            }
+        }
+
+        window.onload = () => {
+            updateActiveTab();
+            loadStaffSchedule();
+        };
     </script>
 </body>
 </html>

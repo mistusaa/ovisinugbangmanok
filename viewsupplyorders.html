@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Supply Orders and Details</title>
+    <title>View Supply Orders</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
@@ -121,33 +121,70 @@
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff; /*  Changed to white for better table visibility */
             padding: 20px;
-            color: white;
+            color: black; /* Changed to black for better table visibility */
         }
+
+         /* Table Styles */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          color: black; /* Added for text visibility*/
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #007bff;
+          color: white;
+        }
+
+        select {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+
+
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
-                <h1>Inventory</h1>
+                <h1>Supply Orders</h1>
                 <div class="nav">
                     <a href="viewsupplyorders.html" class="active">View Supply Orders and Details</a>
-                    <a href="viewincomingstacks.html">View Incoming Stacks</a>
+                    <a href="viewincomingstacks.html">View Incoming Stocks</a>
+                    <!-- Add links to other supply order related pages if you have them -->
                 </div>
             </div>
             <div class="content">
-                <!-- View Supply Orders and Details content will be here -->
-                <p>This is the View Supply Orders and Details content.</p>
-                <!-- Add your supply orders table/display here -->
+                <!-- Inventory display will be here -->
+                 <label for="tableSelect">Choose Table:</label>
+                 <select id="tableSelect">
+                    <option value="supply">Supply Orders</option>
+                    <option value="supply-details">Supply Order Details</option>
+                    <option value="supplydetails-addon">Supply Details Add-on</option>
+                 </select>
+
+                <table id="supplyTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -173,8 +210,79 @@
             });
         }
 
-        window.onload = updateActiveTab;
+        window.onload = function() {
+            updateActiveTab(); // Call it on page load
 
+            // Check if the current URL is viewincomingstocks.html
+            if (window.location.pathname.includes('viewincomingstocks.html')) {
+                // Load the incoming stocks data or redirect
+                fetchTableData('incoming-stocks'); // Assuming your API endpoint is /api/incoming-stocks
+            } else {
+                // Default to supply orders data on the main page
+                fetchTableData('supply');
+            }
+        };
+
+
+
+        const tableSelect = document.getElementById('tableSelect');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+
+        async function fetchTableData(tableType) {
+          try {
+              const response = await fetch(`http://localhost:3000/api/${tableType}`); //  Use backticks for template literals
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const data = await response.json();
+              renderTable(data);
+          } catch (error) {
+              console.error("Error fetching data:", error);
+              tableBody.innerHTML = '<tr><td colspan="10">Error loading data. Please check the console.</td></tr>';
+          }
+        }
+
+        function renderTable(data) {
+          // Clear table
+          tableHead.innerHTML = '';
+          tableBody.innerHTML = '';
+
+          if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="10">No data available</td></tr>';
+            return;
+          }
+
+          // Generate table headers
+          const headers = Object.keys(data[0]);
+          const headerRow = headers.map(header => `<th>${header}</th>`).join('');  // Use backticks
+          tableHead.innerHTML = `<tr>${headerRow}</tr>`;
+
+          // Generate table rows
+          data.forEach(row => {
+            const rowHTML = headers.map(header => `<td>${row[header] === null ? 'N/A' : row[header]}</td>`).join(''); // Use backticks, handle null
+            tableBody.innerHTML += `<tr>${rowHTML}</tr>`;
+          });
+        }
+
+        // Load default table
+        tableSelect.addEventListener('change', () => {
+          fetchTableData(tableSelect.value);
+        });
+
+        // Initial load
+        tableSelect.addEventListener('change', () => {
+            fetchTableData(tableSelect.value);
+        });
+
+        // Set the initial table on page load based on the current URL
+        if (window.location.pathname.includes('viewincomingstocks.html')) {
+            fetchTableData('incoming-stocks');  // Adjust to your API endpoint
+            tableSelect.value = 'incoming-stocks'; // set the table selected as incoming-stocks
+            tableSelect.style.display = "none"; // make the selection invisible
+        } else {
+            fetchTableData('supply'); // Default to "Supply" on viewsupplyorders.html
+        }
     </script>
 </body>
 </html>

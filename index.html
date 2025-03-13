@@ -1,95 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Ovi</title>
+    <title>Ovi Sinugbang Manok Kiosk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
         }
+
         body {
+            font-family: 'Poppins', sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            background: #f8f9fa;
         }
+
+        .sidebar {
+            width: 250px;
+            background: #ff4757;
+            color: #fff;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .sidebar.active {
+            display: flex;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+        }
+
+        .sidebar button {
+            background: #ff6b81;
+            border: none;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        .sidebar button:hover {
+            background: #ff4757;
+            transform: scale(1.1);
+        }
+
         .container {
-            border: 3px solid #333;
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .container.active {
+            display: flex;
+        }
+
+        header {
+            background: #ff4757;
+            color: #fff;
             padding: 20px;
             text-align: center;
-            background: white;
-            border-radius: 10px;
-            width: 400px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease-in-out;
+            font-size: 28px;
+            font-weight: 600;
         }
-        .container:hover {
-            transform: scale(1.05);
+
+        .content {
+            padding: 20px;
+            text-align: center;
         }
-        h1 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .input-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        input {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            width: 100%;
-        }
+
         button {
-            padding: 15px;
+            padding: 10px 20px;
             border: none;
-            background: #007bff;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
             border-radius: 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-            font-weight: bold;
-            width: 100%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.3s;
         }
+
         button:hover {
-            background: #0056b3;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
         }
-        button:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+        .btn-primary {
+            background: linear-gradient(45deg, #1e90ff, #007bff);
+            color: #fff;
+        }
+
+        .btn-primary.special {
+            background: linear-gradient(45deg, #ff7f50, #ff6347);
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #ff6b81;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            font-size: 20px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal,
+        .cart-modal,
+        .confirmation-modal,
+        .empty-cart-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            z-index: 10;
+            width: 400px;
+            text-align: center;
+        }
+
+        .cart-modal {
+            width: 500px;
+        }
+
+        .modal.active,
+        .cart-modal.active,
+        .confirmation-modal.active,
+        .empty-cart-modal.active {
+            display: block;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 5;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .remove-btn {
+            background: #ff4757;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-btn:hover {
+            background: #ff6b81;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Login</h1>
-        <div class="input-container">
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="login()">Login</button>
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <button onclick="showPage('budgetMeals')">Budget Meals</button>
+        <button onclick="showPage('addons')">Add-ons</button>
+        <button onclick="showCart()">Show Cart</button>
+    </div>
+
+    <div id="welcome" class="container active">
+        <header>Welcome to Ovi Sinugbang Manok!</header>
+        <div class="content">
+            <p>Quick and delicious food at your fingertips. Order now!</p>
+            <button class="btn-primary" onclick="startOrder()">Start Order</button>
         </div>
     </div>
+
+    <div id="budgetMeals" class="container">
+        <header>Budget Meals</header>
+        <div class="content">
+            <button class="btn-primary special" onclick="showModal('combo1', 'Combo 1: 1 pc Pecho + Unli Rice + Unli Drinks + Peri Peri Sauce', 120)">Combo 1 - ₱120</button>
+            <button class="btn-primary" onclick="showModal('meal1', 'Combo 2: 1 pc Pecho + Peri Peri Sauce', 90)">Combo 2 - ₱90</button>
+            <button class="btn-primary special" onclick="showModal('combo2', 'Combo 3: 1 pc Paa + Unli Rice + Unli Drinks + Peri Peri Sauce', 99)">Combo 3 - ₱99</button>
+            <button class="btn-primary" onclick="showModal('meal2', 'Combo 4: 1 pc Paa + Peri Peri Sauce', 90)">Combo 4 - ₱90</button>
+        </div>
+    </div>
+
+    <div id="addons" class="container">
+        <header>Add-ons</header>
+        <div class="content">
+            <button class="btn-primary" onclick="showModal('rice', 'Extra Rice', 20)">Extra Rice - ₱20</button>
+            <button class="btn-primary" onclick="showModal('sauce', 'Extra Sauce', 10)">Extra Sauce - ₱10</button>
+            <button class="btn-primary" onclick="showModal('coke', 'Soft Drinks', 25)">Soft Drinks - ₱25</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal">
+        <p id="modal-text"></p>
+        <button class="btn-primary" onclick="confirmAdd()">Yes</button>
+        <button class="btn-danger" onclick="closeModal()">No</button>
+    </div>
+
+    <div class="cart-modal" id="cart-modal">
+        <h2>Your Cart</h2>
+        <ul id="cart-items"></ul>
+        <button class="btn-primary" onclick="checkout()">Checkout</button>
+        <button class="btn-danger" onclick="closeCart()">Close</button>
+    </div>
+
+    <div class="confirmation-modal" id="confirmation-modal">
+        <h2>Order Confirmation</h2>
+        <p id="confirmation-text"></p>
+        <button class="btn-primary" onclick="closeConfirmation()">Close</button>
+    </div>
+
+    <div class="empty-cart-modal" id="empty-cart-modal">
+        <h2>Empty Cart</h2>
+        <p>Your cart is empty. Please add items before checking out.</p>
+        <button class="btn-primary" onclick="closeEmptyCartModal()">Close</button>
+    </div>
+
     <script>
-        function login() {
-            let username = document.getElementById("username").value;
-            let password = document.getElementById("password").value;
-            if (username && password) {
-                alert("Login successful!");
-            } else {
-                alert("Please enter username and password.");
+        let orders = [];
+        let currentItemId = '';
+        let currentItemName = '';
+        let currentPrice = 0;
+
+        function startOrder() {
+            document.getElementById('sidebar').classList.add('active');
+            showPage('budgetMeals');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.container').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showModal(itemId, itemName, price) {
+            currentItemId = itemId;
+            currentItemName = itemName;
+            currentPrice = price;
+            document.getElementById('modal-text').innerText = `Add ${itemName} for ₱${price}?`;
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function confirmAdd() {
+            orders.push({
+                id: currentItemId,
+                name: currentItemName,
+                price: currentPrice,
+                type: (['rice', 'sauce', 'coke'].includes(currentItemId)) ? 'addon' : 'meal'
+            });
+
+            closeModal();
+            showCart();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function showCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = orders.map((order, index) => `
+                <li>
+                    ${order.name} - ₱${order.price}
+                    <button class="remove-btn" onclick="removeOrder(${index})">Remove</button>
+                </li>
+            `).join('');
+            document.getElementById('cart-modal').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function removeOrder(index) {
+            orders.splice(index, 1);
+            showCart();
+        }
+
+        function closeCart() {
+            document.getElementById('cart-modal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function checkout() {
+            if (orders.length === 0) {
+                document.getElementById('empty-cart-modal').classList.add('active');
+                document.getElementById('overlay').classList.add('active');
+                return;
             }
+
+            // Prepare order data
+            const orderData = {
+                customerId: 101,
+                staffId: 101,
+                orderItems: orders,
+                totalAmount: orders.reduce((sum, item) => sum + item.price, 0)
+            };
+
+            // Send data to server
+            fetch('http://localhost:3000/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('confirmation-text').innerText = `Thank you for your order! Order ID: ${data.orderId}. Your items will be prepared shortly.`;
+                    } else {
+                        document.getElementById('confirmation-text').innerText = `Error placing order: ${data.message}`;
+                    }
+                    document.getElementById('confirmation-modal').classList.add('active');
+                    document.getElementById('overlay').classList.add('active');
+                    orders = []; // Clear the cart
+                    closeCart();
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('confirmation-text').innerText = "An error occurred while placing the order."
+                    document.getElementById('confirmation-modal').classList.add('active');
+                    document.getElementById('overlay').classList.add('active');
+                    orders = [];
+                    closeCart()
+                });
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmation-modal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('sidebar').classList.remove('active');
+            showPage('welcome');
+        }
+
+        function closeEmptyCartModal() {
+            document.getElementById('empty-cart-modal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
         }
     </script>
 </body>
+
 </html>

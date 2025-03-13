@@ -2,41 +2,265 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Inventory</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 80px;
+            background-color: #d3d3d3;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: width 0.3s ease-in-out;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar.expanded {
+            width: 250px;
+            align-items: flex-start;
+            padding-left: 20px;
+        }
+        .sidebar div {
+            width: 50px;
+            height: 50px;
+            background: white;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .sidebar.expanded div {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 15px;
+        }
+        .sidebar div span {
+            display: none;
+            margin-left: 15px;
+            font-weight: 600;
+        }
+        .sidebar.expanded div span {
+            display: inline;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #d3d3d3;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        .nav a, .nav button {
+            text-decoration: none;
+            color: black;
+            font-weight: 600;
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s ease; /* Smooth color transition */
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: #00c853; /* Underline color (Green) */
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease, background-color 0.3s ease; /* Underline animation */
+        }
+
+        .nav a:hover {
+            color: #00c853; /* Hover color (Green) */
+        }
+
+        .nav a:hover::after {
+            width: 100%; /* Expand underline on hover */
+            background-color: #00c853; /* Underline color on hover */
+        }
+
+        .nav a.active {
+            font-weight: 900;
+            color: #007bff; /* Active color (Blue) */
+        }
+
+        .nav a.active::after {
+            width: 100%; /* Keep underline expanded for active link */
+            background-color: #007bff; /* Keep underline blue for active link */
+        }
+        .content {
+            flex-grow: 1;
+            background: #fff; /*  Changed to white for better table visibility */
+            padding: 20px;
+            color: black; /* Changed to black for better table visibility */
+        }
+
+         /* Table Styles */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          color: black; /* Added for text visibility*/
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #007bff;
+          color: white;
+        }
+
+        select {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+          }
+
+
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
-            <div>🏠 <span>Home</span></div>
+        <div class="sidebar" id="sidebar">
+            <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
-                <h1>Inventory View</h1>
+                <h1>Inventory</h1>
                 <div class="nav">
-                    <a href="#" class="active">View Inventory</a>
+                    <a href="viewinventory.html" class="active">View Inventory</a>
+                    <a href="addinventory.html">Add Inventory</a>
+                    <a href="editinventory.html">Edit Inventory</a>
                 </div>
             </div>
             <div class="content">
-                <table id="inventoryTable" border="1" cellpadding="10">
-                    <thead>
-                        <tr>
-                            <th>Inventory ID</th>
-                            <th>Date</th>
-                            <th>Total Make</th>
-                            <th>Total Cost</th>
-                            <th>Item ID</th>
-                            <th>Quantity</th>
-                            <th>Cost</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
+                <!-- Inventory display will be here -->
+                 <label for="tableSelect">Choose Table:</label>
+                 <select id="tableSelect">
+                    <option value="item">Item</option>
+                    <option value="inventory-make">Inventory_Make</option>
+                    <option value="inventory-details">Inventory_Details</option>
+                 </select>
+
+                <table id="inventoryTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
+    <script>
+        function toggleSidebar() {
+            let sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("expanded");
+        }
 
-    <script src="viewinventory.js"></script>
+        function updateActiveTab() {
+            const path = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav a');
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const currentPage = path.substring(path.lastIndexOf('/') + 1);
+
+                if (href === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = updateActiveTab;
+
+
+        const tableSelect = document.getElementById('tableSelect');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+
+        async function fetchTableData(tableType) {
+          try{
+            const response = await fetch(`http://localhost:3000/api/${tableType}`); // Make sure your API endpoint is correct
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            renderTable(data);
+          } catch (error) {
+                console.error("Error fetching data:", error);
+                tableBody.innerHTML = '<tr><td colspan="10">Error loading data. Please check the console.</td></tr>';
+            }
+        }
+
+        function renderTable(data) {
+          // Clear table
+          tableHead.innerHTML = '';
+          tableBody.innerHTML = '';
+
+          if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="10">No data available</td></tr>';
+            return;
+          }
+
+          // Generate table headers
+          const headers = Object.keys(data[0]);
+          const headerRow = headers.map(header => `<th>${header}</th>`).join('');
+          tableHead.innerHTML = `<tr>${headerRow}</tr>`;
+
+          // Generate table rows
+          data.forEach(row => {
+            const rowHTML = headers.map(header => `<td>${row[header]}</td>`).join('');
+            tableBody.innerHTML += `<tr>${rowHTML}</tr>`;
+          });
+        }
+
+        // Load default table
+        tableSelect.addEventListener('change', () => {
+          fetchTableData(tableSelect.value);
+        });
+
+        // Initial load
+        fetchTableData('item'); // Load default table on page load
+    </script>
 </body>
 </html>

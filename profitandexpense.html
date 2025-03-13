@@ -117,12 +117,51 @@
 
         .nav a.active::after {
             width: 100%; /* Keep underline expanded for active link */
-            background-color: #007bff; /* Keep underline blue for active link */
+            background-color: #007bff; /* Underline color on hover */
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff;
             padding: 20px;
+            color: black;
+        }
+
+        /* Styles for Summary Metrics */
+        .summary-metrics {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: black;
+        }
+
+        .summary-metrics h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .summary-metrics p {
+            margin: 5px 0;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: black;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
             color: white;
         }
     </style>
@@ -131,10 +170,10 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
@@ -147,9 +186,38 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Profit & Expense Tracking content will be here -->
-                <p>This is the Profit & Expense Tracking content.</p>
-                <!-- Add your profit & expense table/chart here -->
+              <div class="summary-metrics">
+                <h2>Profit & Expense Summary</h2>
+                <p>Total Revenue: <span id="totalRevenue"></span></p>
+                <p>Total Expenses: <span id="totalExpenses"></span></p>
+                <p>Net Profit: <span id="netProfit"></span></p>
+                </div>
+
+                <h2>Expenses</h2>
+                <table id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>Expense ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesTableBody"></tbody>
+                </table>
+
+                <h2>Revenue</h2>
+                <table id="revenueTable">
+                    <thead>
+                        <tr>
+                            <th>Revenue ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenueTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -175,8 +243,77 @@
             });
         }
 
-        window.onload = updateActiveTab;
+        async function loadProfitAndExpense() {
+            try {
+                const res = await fetch("http://localhost:3000/api/profit-and-expense");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
 
+                // Assuming the data has separate lists for expenses and revenue and the totals
+                const {
+                    expenses,
+                    revenue,
+                    totalRevenue,
+                    totalExpenses,
+                    netProfit
+                } = data;
+
+
+                // Expenses
+                const expensesTableBody = document.getElementById("expensesTableBody");
+                expensesTableBody.innerHTML = "";
+                expenses.forEach(expense => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${expense.supply_id}</td>
+                        <td>${expense.date}</td>
+                        <td>SupplierID: ${expense.supplier_id}, StaffID: ${expense.staff_id}</td>
+                        <td>₱${parseFloat(expense.total_amount).toFixed(2)}</td>
+                    `;
+                    expensesTableBody.appendChild(tr);
+                });
+
+                // Revenue
+                const revenueTableBody = document.getElementById("revenueTableBody");
+                revenueTableBody.innerHTML = "";
+                revenue.forEach(rev => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${rev.order_id}</td>
+                        <td>${rev.date}</td>
+                        <td>CustomerID: ${rev.customer_id}, StaffID: ${rev.staff_id}</td>
+                        <td>₱${parseFloat(rev.total_amount).toFixed(2)}</td>
+                    `;
+                    revenueTableBody.appendChild(tr);
+                });
+
+                // Set Summary Metrics
+                document.getElementById("totalRevenue").innerText = `₱${parseFloat(totalRevenue).toFixed(2)}`;
+                document.getElementById("totalExpenses").innerText = `₱${parseFloat(totalExpenses).toFixed(2)}`;
+                document.getElementById("netProfit").innerText = `₱${parseFloat(netProfit).toFixed(2)}`;
+
+            } catch (error) {
+                console.error("Error fetching profit and expense data:", error);
+                // Expenses
+                const expensesTableBody = document.getElementById("expensesTableBody");
+                expensesTableBody.innerHTML = `<tr><td colspan="4">Error loading data.</td></tr>`;
+
+                // Revenue
+                const revenueTableBody = document.getElementById("revenueTableBody");
+                revenueTableBody.innerHTML = `<tr><td colspan="4">Error loading data.</td></tr>`;
+
+                document.getElementById("totalRevenue").innerText = `N/A`;
+                document.getElementById("totalExpenses").innerText = `N/A`;
+                document.getElementById("netProfit").innerText = `N/A`;
+            }
+        }
+
+        window.onload = () => {
+            updateActiveTab();
+            loadProfitAndExpense();
+        };
     </script>
 </body>
 </html>

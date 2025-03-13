@@ -121,6 +121,8 @@
     }
     form label {
       font-weight: 600;
+      display: block; /* Ensure labels are on their own line */
+      margin-bottom: 5px; /* Add some spacing below the labels */
     }
     form input {
       padding: 8px;
@@ -128,6 +130,7 @@
       margin-bottom: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
     }
     button {
       background-color: #00c853;
@@ -141,16 +144,22 @@
     button:hover {
       background-color: #009944;
     }
+
+      /* Style for the form selection */
+    #formSelect {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="sidebar" id="sidebar">
       <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-      <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-      <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-      <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-      <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+      <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+      <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+      <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+      <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
     </div>
     <div class="main-content">
       <div class="header">
@@ -163,27 +172,77 @@
       </div>
       <div class="content">
         <h2>Add Inventory Record</h2>
-        <form id="inventoryForm">
-          <label>Inventory ID:</label>
-          <input type="number" id="inventoryID" required>
 
-          <label>Date:</label>
-          <input type="date" id="date" required>
+        <label for="formSelect">Choose Table:</label>
+        <select id="formSelect">
+            <option value="item">Item</option>
+            <option value="inventory-make">Inventory_Make</option>
+            <option value="inventory-details">Inventory_Details</option>
+        </select>
 
-          <label>Manager ID:</label>
-          <input type="number" id="managerID" required>
+        <div id="inventoryMakeForm">
+          <h3>Add Inventory_Make Record</h3>
+          <form id="inventoryMakeSubmitForm">
+            <label for="inventoryID">Inventory ID:</label>
+            <input type="number" id="inventoryID" name="inventoryID" required>
 
-          <label>Cook ID:</label>
-          <input type="number" id="cookID" required>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
 
-          <label>Total Make:</label>
-          <input type="number" id="totalMake" required>
+            <label for="managerID">Manager ID:</label>
+            <input type="number" id="managerID" name="managerID" required>
 
-          <label>Total Cost:</label>
-          <input type="number" id="totalCost" required><br>
+            <label for="cookID">Cook ID:</label>
+            <input type="number" id="cookID" name="cookID" required>
 
-          <button type="submit">Add Inventory</button>
-        </form>
+            <label for="totalMake">Total Make:</label>
+            <input type="number" id="totalMake" name = "totalMake" required>
+
+            <label for ="totalCost">Total Cost:</label>
+            <input type="number" id="totalCost" name="totalCost" step="0.01" required><br>
+
+            <button type="submit">Add Inventory_Make</button>
+          </form>
+        </div>
+
+        <div id="itemForm" style="display:none;">
+          <h3>Add Item Record</h3>
+          <form id="itemSubmitForm">
+            <label for="itemID">Item ID:</label>
+            <input type="number" id="itemID" name="itemID" required>
+
+            <label for="itemName">Item Name:</label>
+            <input type="text" id="itemName" name="itemName" required>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required><br>
+
+            <button type="submit">Add Item</button>
+          </form>
+        </div>
+
+        <div id="inventoryDetailsForm" style="display:none;">
+          <h3>Add Inventory_Details Record</h3>
+          <form id="inventoryDetailsSubmitForm">
+            <label for="inventoryDetailsInventoryID">Inventory ID:</label>
+            <input type="number" id="inventoryDetailsInventoryID" name="inventoryDetailsInventoryID" required>
+
+            <label for="inventoryDetailsItemID">Item ID:</label>
+            <input type="number" id="inventoryDetailsItemID" name="inventoryDetailsItemID" required>
+
+            <label for="inventoryDetailsQuantity">Quantity:</label>
+            <input type="number" id="inventoryDetailsQuantity" name="inventoryDetailsQuantity" required>
+
+            <label for="inventoryDetailsCost">Cost:</label>
+            <input type="number" id="inventoryDetailsCost" name="inventoryDetailsCost" step="0.01" required>
+
+            <label for="inventoryDetailsSubtotal">Subtotal:</label>
+            <input type="number" id="inventoryDetailsSubtotal" name="inventoryDetailsSubtotal" step="0.01" required><br>
+
+            <button type="submit">Add Inventory_Details</button>
+          </form>
+        </div>
+
         <p id="response"></p>
       </div>
     </div>
@@ -210,31 +269,108 @@
 
     window.onload = updateActiveTab;
 
-    document.getElementById('inventoryForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+    const formSelect = document.getElementById('formSelect');
+    const inventoryMakeFormDiv = document.getElementById('inventoryMakeForm');
+    const itemFormDiv = document.getElementById('itemForm');
+    const inventoryDetailsFormDiv = document.getElementById('inventoryDetailsForm');
 
-      const data = {
-        inventoryID: document.getElementById('inventoryID').value,
-        date: document.getElementById('date').value,
-        managerID: document.getElementById('managerID').value,
-        cookID: document.getElementById('cookID').value,
-        totalMake: document.getElementById('totalMake').value,
-        totalCost: document.getElementById('totalCost').value
-      };
+    // Set Item form to show on load
+    inventoryMakeFormDiv.style.display = 'none';
+    itemFormDiv.style.display = 'block';
+    inventoryDetailsFormDiv.style.display = 'none';
 
-      try {
-        const res = await fetch('http://localhost:3000/api/inventory', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+    formSelect.addEventListener('change', () => {
+        inventoryMakeFormDiv.style.display = 'none';
+        itemFormDiv.style.display = 'none';
+        inventoryDetailsFormDiv.style.display = 'none';
 
-        const result = await res.json();
-        document.getElementById('response').innerText = result.message;
-      } catch (error) {
-        document.getElementById('response').innerText = 'Error connecting to the server.';
-        console.error(error);
-      }
+        if (formSelect.value === 'item') {
+            itemFormDiv.style.display = 'block';
+        } else if (formSelect.value === 'inventory-make') {
+            inventoryMakeFormDiv.style.display = 'block';
+        } else if (formSelect.value === 'inventory-details') {
+            inventoryDetailsFormDiv.style.display = 'block';
+        }
+    });
+
+    // Handle Inventory_Make Form Submission
+    document.getElementById('inventoryMakeSubmitForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const data = {
+            inventoryID: document.getElementById('inventoryID').value,
+            date: document.getElementById('date').value,
+            managerID: document.getElementById('managerID').value,
+            cookID: document.getElementById('cookID').value,
+            totalMake: document.getElementById('totalMake').value,
+            totalCost: document.getElementById('totalCost').value
+        };
+
+        try {
+            const res = await fetch('http://localhost:3000/api/inventory-make', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            document.getElementById('response').innerText = result.message;
+        } catch (error) {
+            document.getElementById('response').innerText = 'Error connecting to the server.';
+            console.error(error);
+        }
+    });
+
+    // Handle Item Form Submission
+    document.getElementById('itemSubmitForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const data = {
+            itemID: document.getElementById('itemID').value,
+            itemName: document.getElementById('itemName').value,
+            quantity: document.getElementById('quantity').value
+        };
+
+        try {
+            const res = await fetch('http://localhost:3000/api/item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            document.getElementById('response').innerText = result.message;
+        } catch (error) {
+            document.getElementById('response').innerText = 'Error connecting to the server.';
+            console.error(error);
+        }
+    });
+
+    // Handle Inventory_Details Form Submission
+    document.getElementById('inventoryDetailsSubmitForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const data = {
+            inventoryID: document.getElementById('inventoryDetailsInventoryID').value,
+            itemID: document.getElementById('inventoryDetailsItemID').value,
+            quantity: document.getElementById('inventoryDetailsQuantity').value,
+            cost: document.getElementById('inventoryDetailsCost').value,
+            subtotal: document.getElementById('inventoryDetailsSubtotal').value
+        };
+
+        try {
+            const res = await fetch('http://localhost:3000/api/inventory-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            document.getElementById('response').innerText = result.message;
+        } catch (error) {
+            document.getElementById('response').innerText = 'Error connecting to the server.';
+            console.error(error);
+        }
     });
   </script>
 </body>

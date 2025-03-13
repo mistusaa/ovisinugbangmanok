@@ -117,13 +117,51 @@
 
         .nav a.active::after {
             width: 100%; /* Keep underline expanded for active link */
-            background-color: #007bff; /* Keep underline blue for active link */
+            background-color: #007bff; /* Underline color on hover */
         }
         .content {
             flex-grow: 1;
-            background: #444;
+            background: #fff;
             padding: 20px;
+            color: black;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: black;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
             color: white;
+        }
+
+        .summary-metrics {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: black;
+        }
+
+        .summary-metrics h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .summary-metrics p {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -131,10 +169,10 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div onclick="toggleSidebar()">🔄 <span>Libraries</span></div>
-            <div onclick="window.location.href='inventorysystem.html'">☰ <span>Inventory System</span></div>
-            <div onclick="window.location.href='suppliesmanagement.html'">📦 <span>Supplies Management</span></div>
-            <div onclick="window.location.href='staffpreferences.html'">👥 <span>Staff Preferences</span></div>
-            <div onclick="window.location.href='datastatistics.html'">📊 <span>View Data Statistics</span></div>
+            <div onclick="window.location.href='viewinventory.html'">☰ <span>Inventory System</span></div>
+            <div onclick="window.location.href='viewsupplyorders.html'">📦 <span>Supplies Management</span></div>
+            <div onclick="window.location.href='stafflists.html'">👥 <span>Staff Preferences</span></div>
+            <div onclick="window.location.href='salesreport.html'">📊 <span>View Data Statistics</span></div>
         </div>
         <div class="main-content">
             <div class="header">
@@ -147,9 +185,58 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Supply Report content will be here -->
-                <p>This is the Supply Report content.</p>
-                <!-- Add your supply report table/chart here -->
+
+            <div class="summary-metrics">
+                <h2>🚚 Supply Report Summary Metrics</h2>
+                <p>Total Supply Orders: <span id="totalSupplyOrders"></span></p>
+                <p>Total Items Supplied: <span id="totalItemsSupplied"></span></p>
+                <p>Total Supply Cost: <span id="totalSupplyCost"></span></p>
+            </div>
+
+                <h2>Supply Orders</h2>
+                <table id="supplyTable">
+                    <thead>
+                        <tr>
+                            <th>Supply ID</th>
+                            <th>Date</th>
+                            <th>Staff ID</th>
+                            <th>Total Amount</th>
+                            <th>Supplier ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplyTableBody">
+                    </tbody>
+                </table>
+
+                <h2>Supply Details</h2>
+                <table id="supplyDetailsTable">
+                    <thead>
+                        <tr>
+                            <th>Supply ID</th>
+                            <th>Item ID</th>
+                            <th>Quantity</th>
+                            <th>Supply Amount</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplyDetailsTableBody">
+                    </tbody>
+                </table>
+
+                 <h2>Supply Details AddOn</h2>
+                <table id="supplyDetailsAddOnTable">
+                    <thead>
+                        <tr>
+                            <th>Supply ID</th>
+                            <th>AddOnID</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplyDetailsAddOnTableBody">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -175,8 +262,127 @@
             });
         }
 
-        window.onload = updateActiveTab;
+        async function loadSupplyReport() {
+            // Load Supply Table Data
+            const supplyTableBody = document.getElementById("supplyTableBody");
+            supplyTableBody.innerHTML = "";
 
+            try {
+                const res = await fetch("http://localhost:3000/api/supply");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const supplyData = await res.json();
+
+                let totalItemsSupplied = 0;
+                let totalSupplyCost = 0;
+
+                supplyData.forEach(supply => {
+                 let totalAmountValue = supply.total_amount; // Explicitly access value
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${supply.supply_id}</td>
+                        <td>${supply.date}</td>
+                        <td>${supply.staff_id}</td>
+                        <td>₱${totalAmountValue}</td>
+                        <td>${supply.supplier_id}</td>
+                    `;
+                    supplyTableBody.appendChild(tr);
+
+                    totalItemsSupplied++; //each table row is consider 1 item supplied
+                 const totalAmount = parseFloat(supply.total_amount); // Explicitly Convert
+                if (!isNaN(totalAmount)) {
+                    totalSupplyCost += totalAmount;
+                    } else {
+                        console.error("Invalid total_amount value:", supply.total_amount); //log if NaN
+                    }
+
+                });
+
+                   document.getElementById("totalSupplyOrders").innerText = supplyData.length;
+
+                       if (typeof totalSupplyCost === 'number') { // double check is that numerical
+                  document.getElementById("totalSupplyCost").innerText = `₱${totalSupplyCost.toFixed(2)}`;
+
+              } else {
+                    document.getElementById("totalSupplyCost").innerText = `N/A`;
+                    console.error("Suppy total cost was not a valid number");
+              }
+
+            } catch (error) {
+                console.error("Error fetching supply data:", error);
+                supplyTableBody.innerHTML = `<tr><td colspan="5">Error loading data.</td></tr>`;
+                   document.getElementById("totalSupplyOrders").innerText = 'N/A';
+                     document.getElementById("totalSupplyCost").innerText = `N/A`;
+            }
+
+            // Load Supply_Details Table Data
+            const supplyDetailsTableBody = document.getElementById("supplyDetailsTableBody");
+            supplyDetailsTableBody.innerHTML = "";
+
+            try {
+                const res = await fetch("http://localhost:3000/api/supply-details");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const supplyDetailsData = await res.json();
+
+                let totalQuantity = 0;
+                supplyDetailsData.forEach(detail => {
+                     totalQuantity += detail.quantity; //get total quantity
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${detail.supply_id}</td>
+                        <td>${detail.item_id}</td>
+                        <td>${detail.quantity}</td>
+                        <td>${detail.supply_amount}</td>
+                        <td>${detail.subtotal}</td>
+                    `;
+                    supplyDetailsTableBody.appendChild(tr);
+                });
+                 document.getElementById("totalItemsSupplied").innerText = totalQuantity;
+            } catch (error) {
+                console.error("Error fetching supply details data:", error);
+                supplyDetailsTableBody.innerHTML = `<tr><td colspan="5">Error loading data.</td></tr>`;
+                     document.getElementById("totalItemsSupplied").innerText = `N/A`;
+            }
+
+            // Load SupplyDetails_AddON Table Data
+            const supplyDetailsAddOnTableBody = document.getElementById("supplyDetailsAddOnTableBody");
+            supplyDetailsAddOnTableBody.innerHTML = "";
+
+            try {
+                const res = await fetch("http://localhost:3000/api/supply-details-addon");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const supplyDetailsAddOnData = await res.json();
+
+                supplyDetailsAddOnData.forEach(addon => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${addon.supply_id}</td>
+                        <td>${addon.AddONID}</td>
+                        <td>${addon.Qty}</td>
+                        <td>${addon.price}</td>
+                        <td>${addon.Subtotal}</td>
+                    `;
+                    supplyDetailsAddOnTableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Error fetching supply details addon data:", error);
+                supplyDetailsAddOnTableBody.innerHTML = `<tr><td colspan="5">Error loading data.</td></tr>`;
+            }
+
+           
+
+        }
+
+        window.onload = () => {
+            updateActiveTab();
+            loadSupplyReport();
+        };
     </script>
 </body>
 </html>
