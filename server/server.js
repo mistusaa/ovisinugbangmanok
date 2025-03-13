@@ -8,11 +8,11 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// DB Connection
+
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '', // or your own password
+  password: '', 
   database: 'db_ovisinugbangmanok'
 });
 
@@ -27,8 +27,11 @@ db.connect(err => {
 
 
 
+//IVENTORY SECTION
 
-// ✅ INSERT Inventory API
+//ADD INVENTORY TAB
+
+//add inventory inventory_make
 app.post('/api/inventory', (req, res) => {
   const { inventoryID, date, managerID, cookID, totalMake, totalCost } = req.body;
   console.log('Received data:', req.body);
@@ -45,7 +48,7 @@ app.post('/api/inventory', (req, res) => {
   });
 });
 
-// API endpoint to add Item
+//add inventory item
 app.post('/api/item', (req, res) => {
   const { itemID, itemName, quantity } = req.body;
   const sql = 'INSERT INTO Item (item_id, item_name, quantity) VALUES (?, ?, ?)';
@@ -59,7 +62,7 @@ app.post('/api/item', (req, res) => {
   });
 });
 
-// API endpoint to add Inventory_Details
+//add inventory inventory_details
 app.post('/api/inventory-details', (req, res) => {
   const { inventoryID, itemID, quantity, cost, subtotal } = req.body;
   const sql = 'INSERT INTO Inventory_Details (inventory_id, item_id, quantity, cost, subtotal) VALUES (?, ?, ?, ?, ?)';
@@ -73,7 +76,9 @@ app.post('/api/inventory-details', (req, res) => {
   });
 });
 
-// ✅ GET Inventory_Make Data
+//VIEW INVEENTORY TAB
+
+//get inventory_make
 app.get('/api/inventory-make', (req, res) => {
   const sql = `SELECT * FROM inventory_make`;
 
@@ -86,7 +91,7 @@ app.get('/api/inventory-make', (req, res) => {
   });
 });
 
-// ✅ GET Inventory_Details Data
+//get inventory_details
 app.get('/api/inventory-details', (req, res) => {
   const sql = `SELECT * FROM inventory_details`;
 
@@ -113,8 +118,9 @@ app.get('/api/item', (req, res) => {
   });
 });
 
+//EDIT INVENTORY TAB
 
-// ✅ PUT Update Inventory_Make
+//update inventory_details
 app.put('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
   const { inventory_id, item_id } = req.params;
   const { quantity, cost, subtotal } = req.body;
@@ -132,6 +138,7 @@ app.put('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
   });
 });
 
+//update inventory_make
 app.put('/api/inventory-make/:id', (req, res) => {
   const { id } = req.params;
   const { date, managerID, cookID, totalMake, totalCost } = req.body;
@@ -150,48 +157,9 @@ app.put('/api/inventory-make/:id', (req, res) => {
   });
 });
 
-
-// ✅ PUT Update Inventory_Details
-app.put('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
-  const { inventory_id, item_id } = req.params;
-  const { quantity, cost, subtotal } = req.body;
-
-  const sql = `UPDATE inventory_details 
-               SET quantity = ?, cost = ?, subtotal = ?
-               WHERE inventory_id = ? AND item_id = ?`;
-
-  db.query(sql, [quantity, cost, subtotal, inventory_id, item_id], (err, result) => {
-    if (err) {
-      console.error('Error updating inventory_details:', err);
-      return res.status(500).json({ message: 'Update failed' });
-    }
-    res.status(200).json({ message: 'Update successful' });
-  });
-});
-
-// API endpoint to DELETE Item
-app.delete('/api/item/:id', (req, res) => {
-  const { id } = req.params;  // get the item id
-
-  const sql = 'DELETE FROM Item WHERE item_id = ?';
-
-  db.query(sql, [id], (err, result) => {
-      if (err) {
-          console.error('Error deleting item: ' + err.stack);
-          return res.status(500).json({ message: 'Error deleting item' });
-      }
-
-      if (result.affectedRows > 0) {
-          res.json({ message: 'Item deleted successfully' });
-      } else {
-          res.status(404).json({ message: 'Item not found' });
-      }
-  });
-});
-
-// API endpoint to UPDATE Item
+//update item
 app.put('/api/item/:id', (req, res) => {
-  const { id } = req.params;  // get the item id
+  const { id } = req.params; 
   const { item_name, quantity } = req.body;
 
   const sql = 'UPDATE Item SET item_name = ?, quantity = ? WHERE item_id = ?';
@@ -210,7 +178,47 @@ app.put('/api/item/:id', (req, res) => {
   });
 });
 
-// ✅ DELETE Inventory_Make
+//
+app.put('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
+  const { inventory_id, item_id } = req.params;
+  const { quantity, cost, subtotal } = req.body;
+
+  const sql = `UPDATE inventory_details 
+               SET quantity = ?, cost = ?, subtotal = ?
+               WHERE inventory_id = ? AND item_id = ?`;
+
+  db.query(sql, [quantity, cost, subtotal, inventory_id, item_id], (err, result) => {
+    if (err) {
+      console.error('Error updating inventory_details:', err);
+      return res.status(500).json({ message: 'Update failed' });
+    }
+    res.status(200).json({ message: 'Update successful' });
+  });
+});
+
+//delete item
+app.delete('/api/item/:id', (req, res) => {
+  const { id } = req.params;  
+
+  const sql = 'DELETE FROM Item WHERE item_id = ?';
+
+  db.query(sql, [id], (err, result) => {
+      if (err) {
+          console.error('Error deleting item: ' + err.stack);
+          return res.status(500).json({ message: 'Error deleting item' });
+      }
+
+      if (result.affectedRows > 0) {
+          res.json({ message: 'Item deleted successfully' });
+      } else {
+          res.status(404).json({ message: 'Item not found' });
+      }
+  });
+});
+
+
+
+//delete inventory_make
 app.delete('/api/inventory-make/:id', (req, res) => {
   const { id } = req.params;
   const sql = `DELETE FROM inventory_make WHERE InventoryID = ?`;
@@ -224,7 +232,7 @@ app.delete('/api/inventory-make/:id', (req, res) => {
   });
 });
 
-// ✅ DELETE Inventory_Details
+//delete inventory_details
 app.delete('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
   const { inventory_id, item_id } = req.params;
 
@@ -238,6 +246,11 @@ app.delete('/api/inventory-details/:inventory_id/:item_id', (req, res) => {
     res.status(200).json({ message: 'Inventory Details deleted' });
   });
 });
+
+
+//SUPPLY ORDERS SECTION
+
+
 
 // GET Supply Orders
 app.get('/api/supply', (req, res) => {

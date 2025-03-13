@@ -87,7 +87,7 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
-            transition: color 0.3s ease; /* Smooth color transition */
+            transition: color 0.3s ease; 
         }
 
         .nav a::after {
@@ -95,29 +95,29 @@
             position: absolute;
             width: 0;
             height: 2px;
-            background-color: #00c853; /* Underline color (Green) */
+            background-color: #00c853; 
             bottom: -5px;
             left: 0;
-            transition: width 0.3s ease, background-color 0.3s ease; /* Underline animation */
+            transition: width 0.3s ease, background-color 0.3s ease; 
         }
 
         .nav a:hover {
-            color: #00c853; /* Hover color (Green) */
+            color: #00c853; 
         }
 
         .nav a:hover::after {
-            width: 100%; /* Expand underline on hover */
-            background-color: #00c853; /* Underline color on hover */
+            width: 100%; 
+            background-color: #00c853; 
         }
 
         .nav a.active {
             font-weight: 900;
-            color: #007bff; /* Active color (Blue) */
+            color: #007bff; 
         }
 
         .nav a.active::after {
-            width: 100%; /* Keep underline expanded for active link */
-            background-color: #007bff; /* Keep underline blue for active link */
+            width: 100%; 
+            background-color: #007bff; 
         }
         .content {
             flex-grow: 1;
@@ -173,7 +173,7 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Inventory display will be here -->
+                
                  <label for="tableSelect">Choose Table:</label>
                  <select id="tableSelect">
                     <option value="item">Item</option>
@@ -219,7 +219,7 @@
 
         async function fetchTableData(tableType) {
           try{
-            const response = await fetch(`http://localhost:3000/api/${tableType}`); // Make sure your API endpoint is correct
+            const response = await fetch(`http://localhost:3000/api/${tableType}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -233,7 +233,7 @@
         }
 
         function renderTable(data) {
-          // Clear table
+          
           tableHead.innerHTML = '';
           tableBody.innerHTML = '';
 
@@ -242,12 +242,12 @@
             return;
           }
 
-          // Generate table headers
+          
           const headers = Object.keys(data[0]);
           const headerRow = headers.map(header => `<th>${header}</th>`).join('');
           tableHead.innerHTML = `<tr>${headerRow}</tr>`;
 
-          // Generate table rows
+          
           data.forEach(row => {
             const rowHTML = headers.map(header => `<td>${row[header]}</td>`).join('');
             tableBody.innerHTML += `<tr>${rowHTML}</tr>`;

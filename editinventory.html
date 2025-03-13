@@ -126,14 +126,14 @@
             color: black;  /* Changed to black for text visibility */
         }
 
-        /* Table Styles (important to make them visible) */
+        
         table {
             border-collapse: collapse;
             width: 100%;
             margin-bottom: 30px;
             background: white;
             box-shadow: 0 0 10px #ccc;
-            color: black; /* Added this line */
+            color: black; 
         }
 
         th, td {
@@ -150,7 +150,7 @@
         td input {
             width: 100%;
             padding: 5px;
-            box-sizing: border-box; /* ensures padding and border are included in the width */
+            box-sizing: border-box; 
         }
 
         button {
@@ -186,7 +186,7 @@
                 </div>
             </div>
             <div class="content">
-                <!-- Edit Inventory content will be here -->
+                
 
                 <h2>Item</h2>
                 <table id="itemTable">
@@ -258,7 +258,7 @@
 
         window.onload = updateActiveTab;
 
-        // Fetch and display data
+        
         async function loadData() {
             const itemRes = await fetch('http://localhost:3000/api/item');
             const itemData = await itemRes.json();
